@@ -60,8 +60,6 @@ def api_response_callback(response: APIResponse[BetaMessage]):
     )
 
 
-
-
 async def main():
     provider = APIProvider.BEDROCK
     if len(sys.argv) > 1:
@@ -90,6 +88,7 @@ async def main():
         only_n_most_recent_images=3,
         max_tokens=4096,
     )
+    return messages
 
 
 if __name__ == "__main__":
@@ -97,11 +96,6 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as e:
         print(f"Encountered Error:\n{e}")
-
-
-
-
-
 
 
 

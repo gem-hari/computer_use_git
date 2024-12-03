@@ -55,8 +55,7 @@ SYSTEM_PROMPT = f"""<SYSTEM_CAPABILITY>
 * You are utilising an Ubuntu virtual machine using {platform.machine()} architecture with internet access.
 * If the screen is locked, use password "ubuntu".
 * You can feel free to install Ubuntu applications with your bash tool. Use curl instead of wget.
-* Do not close the terminal which is running in UI since this terminal is the one running the code.
-* Open a new bash terminal to execute your bash commands.
+* You can use the bash tool to execute commands in the terminal.
 * To open firefox, open a new bash and execute command 'firefox'.
 * When viewing a page it can be helpful to zoom out so that you can see everything on the page.  Either that, or make sure you scroll down to see everything before deciding something isn't available.
 * When viewing a page, it can be helpful to zoom out so that you can see everything on the page. Alternatively, ensure you scroll down to see everything before deciding something isn't available.
