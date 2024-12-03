@@ -58,10 +58,6 @@ def api_response_callback(response: APIResponse[BetaMessage]):
         json.dumps(json.loads(response.text)["content"], indent=4),  # type: ignore
         "\n",
     )
-
-
-
-
 async def main():
     provider = APIProvider.BEDROCK
     if len(sys.argv) > 1:
