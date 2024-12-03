@@ -93,8 +93,8 @@ class ComputerTool(BaseAnthropicTool):
     def __init__(self):
         super().__init__()
 
-        self.width = int(os.getenv("WIDTH") or 800)
-        self.height = int(os.getenv("HEIGHT") or 600)
+        self.width = int(os.getenv("WIDTH") or 0)
+        self.height = int(os.getenv("HEIGHT") or 0)
         assert self.width and self.height, "WIDTH, HEIGHT must be set"
         if (display_num := os.getenv("DISPLAY_NUM")) is not None:
             self.display_num = int(display_num)
@@ -126,8 +126,8 @@ class ComputerTool(BaseAnthropicTool):
             x, y = self.scale_coordinates(
                 ScalingSource.API, coordinate[0], coordinate[1]
             )
-
             if action == "mouse_move":
+                print("mouse move coordinates ", x," ",y)
                 return await self.shell(f"{self.xdotool} mousemove --sync {x} {y}")
             elif action == "left_click_drag":
                 return await self.shell(
@@ -249,6 +249,7 @@ class ComputerTool(BaseAnthropicTool):
         if target_dimension is None:
             return x, y
         # should be less than 1
+
         x_scaling_factor = target_dimension["width"] / self.width
         y_scaling_factor = target_dimension["height"] / self.height
         if source == ScalingSource.API:

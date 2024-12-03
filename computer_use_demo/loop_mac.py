@@ -55,15 +55,12 @@ SYSTEM_PROMPT = f"""<SYSTEM_CAPABILITY>
 * You are utilising an Ubuntu virtual machine using {platform.machine()} architecture with internet access.
 * If the screen is locked, use password "ubuntu".
 * You can feel free to install Ubuntu applications with your bash tool. Use curl instead of wget.
-* Do not close the terminal which is running in UI since this terminal is the one running the code.
 * Open a new bash terminal to execute your bash commands.
-* To open firefox, open a new bash and execute command 'firefox'.
-* When viewing a page it can be helpful to zoom out so that you can see everything on the page.  Either that, or make sure you scroll down to see everything before deciding something isn't available.
-* When viewing a page, it can be helpful to zoom out so that you can see everything on the page. Alternatively, ensure you scroll down to see everything before deciding something isn't available.
-* When using your computer function calls, they may take a while to run and send back to you. Where possible and feasible, try to chain multiple of these calls into one function call request.
+* Using bash tool you can start GUI applications, but you need to set export DISPLAY=:10.0 and use a subshell. For example "(DISPLAY=:10 xterm &)". GUI apps run with bash tool will appear within your desktop environment, but they may take some time to appear. Take a screenshot to confirm it did.
+* To open firefox, open a new bash and execute command '(DISPLAY=:10.0 firefox &)'.
 * When using your bash tool with commands that are expected to output very large quantities of text, redirect into a tmp file and use str_replace_editor or `grep -n -B <lines before> -A <lines after> <query> <filename>` to confirm output.
 * When viewing a page it can be helpful to zoom out so that you can see everything on the page.  Either that, or make sure you scroll down to see everything before deciding something isn't available.
-* When using your computer function calls, they take a while to run and send back to you.  Where possible/feasible, try to chain multiple of these calls all into one function calls request.
+* When using your computer function calls, they may take a while to run and send back to you. Where possible and feasible, try to chain multiple of these calls into one function call request.
 * The current date is {datetime.today().strftime('%A, %B %-d, %Y')}.
 </SYSTEM_CAPABILITY>
 
