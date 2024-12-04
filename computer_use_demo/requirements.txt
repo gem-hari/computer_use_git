@@ -7,3 +7,4 @@ flask[async]
 opencv-python-headless
 numpy
 mss
+python-dotenv

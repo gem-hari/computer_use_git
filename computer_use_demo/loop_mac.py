@@ -28,6 +28,10 @@ from anthropic.types.beta import (
 from tools import BashTool, ComputerTool, EditTool, ToolCollection, ToolResult
 import os
 
+
+from dotenv import load_dotenv
+load_dotenv()
+
 COMPUTER_USE_BETA_FLAG = "computer-use-2024-10-22"
 PROMPT_CACHING_BETA_FLAG = "prompt-caching-2024-07-31"
 
@@ -52,9 +56,11 @@ PROVIDER_TO_DEFAULT_MODEL_NAME: dict[APIProvider, str] = {
 # We encourage modifying this system prompt to ensure the model has context for the
 # environment it is running in, and to provide any additional information that may be
 # helpful for the task at hand.
+
+
 SYSTEM_PROMPT = f"""<SYSTEM_CAPABILITY>
 * You are utilising an Ubuntu virtual machine using {platform.machine()} architecture with internet access.
-* If the screen is locked, use password "ubuntu".
+* If the screen is locked, use password {os.getenv("SCREEN_PASSWRD")}.
 * You can feel free to install Ubuntu applications with your bash tool. Use curl instead of wget.
 * Open a new bash terminal to execute your bash commands.
 * Using bash tool you can start GUI applications, but you need to set export DISPLAY=:{os.getenv("DISPLAY_NUM")} and use a subshell. For example "(DISPLAY=:10 xterm &)". GUI apps run with bash tool will appear within your desktop environment, but they may take some time to appear. Take a screenshot to confirm it did.
