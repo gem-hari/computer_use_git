@@ -83,7 +83,7 @@ async def main():
         output_callback=output_callback,
         tool_output_callback=tool_output_callback,
         api_response_callback=api_response_callback,
-        only_n_most_recent_images=3,
+        only_n_most_recent_images=6,
         max_tokens=4096,
     )
 
