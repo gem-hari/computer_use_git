@@ -26,6 +26,7 @@ from anthropic.types.beta import (
 )
 
 from tools import BashTool, ComputerTool, EditTool, ToolCollection, ToolResult
+import os
 
 COMPUTER_USE_BETA_FLAG = "computer-use-2024-10-22"
 PROMPT_CACHING_BETA_FLAG = "prompt-caching-2024-07-31"
@@ -56,8 +57,9 @@ SYSTEM_PROMPT = f"""<SYSTEM_CAPABILITY>
 * If the screen is locked, use password "ubuntu".
 * You can feel free to install Ubuntu applications with your bash tool. Use curl instead of wget.
 * Open a new bash terminal to execute your bash commands.
-* Using bash tool you can start GUI applications, but you need to set export DISPLAY=:10.0 and use a subshell. For example "(DISPLAY=:10 xterm &)". GUI apps run with bash tool will appear within your desktop environment, but they may take some time to appear. Take a screenshot to confirm it did.
-* To open firefox, please just execute (DISPLAY=:10.0 firefox &).
+* Using bash tool you can start GUI applications, but you need to set export DISPLAY=:{os.getenv("DISPLAY_NUM")} and use a subshell. For example "(DISPLAY=:10 xterm &)". GUI apps run with bash tool will appear within your desktop environment, but they may take some time to appear. Take a screenshot to confirm it did.
+* Get the DISPLAY value by performing echo $DISPLAY, and use this value while starting the bash and firefox.
+* To open firefox, please just execute (DISPLAY=:{os.getenv("DISPLAY_NUM")} firefox &).
 * When using your bash tool with commands that are expected to output very large quantities of text, redirect into a tmp file and use str_replace_editor or `grep -n -B <lines before> -A <lines after> <query> <filename>` to confirm output.
 * When viewing a page it can be helpful to zoom out so that you can see everything on the page.  Either that, or make sure you scroll down to see everything before deciding something isn't available.
 * When using your computer function calls, they may take a while to run and send back to you. Where possible and feasible, try to chain multiple of these calls into one function call request.

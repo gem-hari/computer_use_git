@@ -13,7 +13,7 @@ from anthropic.types.beta import BetaToolComputerUse20241022Param
 from .base import BaseAnthropicTool, ToolError, ToolResult
 from .run import run
 
-OUTPUT_DIR = "/tmp/outputs"
+OUTPUT_DIR = "/home/h9ri/Documents/tmp/"
 
 TYPING_DELAY_MS = 12
 TYPING_GROUP_SIZE = 50
