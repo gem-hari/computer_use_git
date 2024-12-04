@@ -1,6 +1,6 @@
 [
     {
         "type": "text",
-        "text": "Based on the search results, I can now provide you with the lead actors of Fight Club in JSON format:\n\n```json\n{\n  \"lead_actors\": [\n    {\n      \"name\": \"Edward Norton\",\n      \"role\": \"The Narrator\"\n    },\n    {\n      \"name\": \"Brad Pitt\",\n      \"role\": \"Tyler Durden\"\n    },\n    {\n      \"name\": \"Helena Bonham Carter\",\n      \"role\": \"Marla Singer\"\n    }\n  ]\n}\n```\n\nThese are the three main leads of the 1999 film Fight Club. The movie was directed by David Fincher and is based on Chuck Palahniuk's novel of the same name. The film was released as a psychological thriller/drama and has become a cult classic since its release."
+        "text": "Based on the search results, I'll format the lead actors information into JSON:\n\n```json\n{\n    \"movie\": \"Fight Club\",\n    \"year\": 1999,\n    \"lead_actors\": [\n        {\n            \"name\": \"Edward Norton\",\n            \"role\": \"The Narrator\"\n        },\n        {\n            \"name\": \"Brad Pitt\",\n            \"role\": \"Tyler Durden\"\n        },\n        {\n            \"name\": \"Helena Bonham Carter\",\n            \"role\": \"Marla Singer\"\n        }\n    ]\n}\n```\n\nThese are the main lead actors in Fight Club. The movie was released in 1999 and is classified as an Action/Thriller. I've included their character names as well in the JSON structure."
     }
 ]
