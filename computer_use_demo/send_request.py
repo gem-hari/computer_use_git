@@ -1,6 +1,6 @@
 import requests
 
-url = "http://127.0.0.1:5000/computer_use/" 
+url = "http://127.0.0.1:5000/computer_usage/" 
 
 payload = {
     "instruction": " Go to google.com and search for movie 'Fight club' and return the lead actors in a JSON"

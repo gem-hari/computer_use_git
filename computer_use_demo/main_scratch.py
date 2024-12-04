@@ -29,7 +29,10 @@ from loop_mac import (
 )
 from tools import ToolResult
 import json
+from flask import g
 
+
+last_api_response = None
 class Sender(StrEnum):
     USER = "user"
     BOT = "assistant"
@@ -52,13 +55,16 @@ def tool_output_callback(result: ToolResult, tool_use_id: str):
             f.write(base64.b64decode(image_data))
         print(f"Took screenshot screenshot_{tool_use_id}.png")
 
-def api_response_callback(response: APIResponse[BetaMessage]):
+def api_response_callback(response: APIResponse[BetaMessage], g):
+    g.last_api_response = json.loads(response.text)["content"]
     print(
         "\n---------------\nAPI Response:\n",
-        json.dumps(json.loads(response.text)["content"], indent=4),  # type: ignore
+        json.dumps(g.last_api_response, indent=4),
         "\n",
     )
-async def main():
+    
+
+async def main(g):
     provider = APIProvider.BEDROCK
     if len(sys.argv) > 1:
         instruction = " ".join(sys.argv[1:])
@@ -82,18 +88,17 @@ async def main():
         api_key=None,
         output_callback=output_callback,
         tool_output_callback=tool_output_callback,
-        api_response_callback=api_response_callback,
+        api_response_callback=partial(api_response_callback, g=g),
         only_n_most_recent_images=3,
         max_tokens=4096,
     )
-    return messages
 
-
+"""
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
-        print(f"Encountered Error:\n{e}")
+        print(f"Encountered Error:\n{e}")"""
 
 
 
