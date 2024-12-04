@@ -41,7 +41,12 @@ async def run_main():
         else:
             return jsonify({"status": "error", "message": "No API response recorded."}), 500
     except Exception as e:
-        recording = False
+        recording_flag.value = False  
+        screen_process.join(timeout=5)
+        if screen_process.is_alive():
+            screen_process.terminate()
+            print("Screen recording process forcefully terminated.")
+
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
