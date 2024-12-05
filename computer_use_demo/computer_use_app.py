@@ -23,6 +23,7 @@ load_dotenv()
 
 @app.route('/computer_usage/', methods=['POST'])
 async def run_main():
+    last_api_response =None
     global recording
     global is_running
     save_dir = os.getenv("RESUTS_DIR")
@@ -54,6 +55,7 @@ async def run_main():
         screen_process.start()
 
         await main(g)
+        last_api_response = g.last_api_response
         recording_flag.value = False  
         screen_process.join(timeout=5)
 
@@ -66,9 +68,10 @@ async def run_main():
         object_name = upload_to_s3(s3_client,save_dir+video_record_name, bucket)
         print("File uploaded to s3 with the name ,", object_name)
 
-        is_running = False
-        if api_lock.locked():
-            api_lock.release()
+        ###close all the apps started 
+        print("Closing all the apps on UI")
+        sys.argv = ["main_scratch.py", "Close all the apps like firefox, terminal running on the UI."]
+        await main(g)
 
         print("Clearing the screenshots and locally saved recording")
         if check_folder_exists(save_dir) and os.getenv("DELETE_TMP_FILES").lower() =="true":
@@ -77,11 +80,15 @@ async def run_main():
             clear_files_in_folder(save_dir+"screenshots")
         if check_folder_exists(os.getenv("OUTPUT_DIR")) and os.getenv("DELETE_TMP_FILES").lower() =="true":
             clear_files_in_folder(os.getenv("OUTPUT_DIR"))
+        
+        is_running = False
+        if api_lock.locked():
+            api_lock.release()
 
-        if hasattr(g, "last_api_response") and g.last_api_response:
-            with open("last_api_response.json", "w") as json_file:
-                json.dump(g.last_api_response, json_file, indent=4)
-            return jsonify({"status": "success", "api_response": g.last_api_response,"video_record_s3_bucket":bucket,"video_response_s3_object_name":object_name}), 200
+        if hasattr(g, "last_api_response") and last_api_response:
+            with open(save_dir+"last_api_response.json", "w") as json_file:
+                json.dump(last_api_response, json_file, indent=4)
+            return jsonify({"status": "success", "api_response": last_api_response,"video_record_s3_bucket":bucket,"video_response_s3_object_name":object_name}), 200
         else:
             return jsonify({"status": "error", "message": "No API response recorded."}), 500
     except Exception as e:
