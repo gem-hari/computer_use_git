@@ -4,12 +4,13 @@ import mss
 import time
 from multiprocessing import Process, Value
 
-def record_screen(output_file="screen_recording.avi", fps=15, recording_flag=None):
+def record_screen(output_file="screen_recording.mp4", fps=15, recording_flag=None):
     with mss.mss() as sct:
         monitor = sct.monitors[1]  
         width = monitor["width"]
         height = monitor["height"]
-        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        #fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         out = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
 
         print("Starting screen recording...")

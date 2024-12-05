@@ -1,6 +1,6 @@
 [
     {
         "type": "text",
-        "text": "Let me extract the lead actors' information from the search results and format it in JSON. From the search results, I can see that the main stars of Fight Club are Brad Pitt and Edward Norton. Here's the information in JSON format:\n\n```json\n{\n    \"movie\": \"Fight Club\",\n    \"year\": 1999,\n    \"lead_actors\": [\n        \"Edward Norton\",\n        \"Brad Pitt\"\n    ]\n}\n```\n\nThis JSON contains the movie name, release year, and the two lead actors of Fight Club. The information is based on the Google search results showing both actors prominently featured in the movie's marketing materials and cast listings."
+        "text": "Based on the search results, I can provide you with the lead actors of Fight Club in JSON format:\n\n```json\n{\n    \"lead_actors\": [\n        {\n            \"name\": \"Edward Norton\",\n            \"role\": \"The Narrator\"\n        },\n        {\n            \"name\": \"Brad Pitt\",\n            \"role\": \"Tyler Durden\"\n        },\n        {\n            \"name\": \"Helena Bonham Carter\",\n            \"role\": \"Marla Singer\"\n        }\n    ],\n    \"movie_info\": {\n        \"title\": \"Fight Club\",\n        \"year\": 1999,\n        \"genre\": \"Action/Thriller\",\n        \"duration\": \"2h 19m\"\n    }\n}\n```\n\nThese are the three main lead actors from the 1999 film Fight Club. The information is structured to show both the actors' names and their respective roles in the movie, along with some basic movie information."
     }
 ]
