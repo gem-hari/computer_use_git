@@ -32,6 +32,11 @@ import json
 from flask import g
 
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 last_api_response = None
 class Sender(StrEnum):
     USER = "user"
@@ -49,9 +54,11 @@ def tool_output_callback(result: ToolResult, tool_use_id: str):
         print(f"!!! Tool Error [{tool_use_id}]:", result.error)
     if result.base64_image:
         # Save the image to a file if needed
-        os.makedirs("screenshots", exist_ok=True)
+        save_dir = os.getenv("RESUTS_DIR")
+        os.makedirs(save_dir, exist_ok=True)
+        os.makedirs(save_dir+"screenshots", exist_ok=True)
         image_data = result.base64_image
-        with open(f"screenshots/screenshot_{tool_use_id}.png", "wb") as f:
+        with open(f"{save_dir}screenshots/screenshot_{tool_use_id}.png", "wb") as f:
             f.write(base64.b64decode(image_data))
         print(f"Took screenshot screenshot_{tool_use_id}.png")
 

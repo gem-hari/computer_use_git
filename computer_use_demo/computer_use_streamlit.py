@@ -15,7 +15,7 @@ if submit_button:
     if instruction.strip() == "":
         st.error("Please enter a valid instruction.")
     else:
-        api_url = "http://127.0.0.1:5000/computer_usage/"
+        api_url = "http://127.0.0.1:8001/computer_usage/"
         headers = {"Content-Type": "application/json"}
         payload = {"instruction": instruction}
 
