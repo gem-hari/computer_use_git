@@ -48,6 +48,7 @@ async def run_main():
             return jsonify({"status": "error", "message": "No Instruction found in the request."}), 500
         
         ##starting the screen recording as a sub-process
+        os.makedirs(save_dir, exist_ok=True)
         screen_process = Process(target=record_screen, kwargs={
             "output_file": save_dir + video_record_name,
             "recording_flag": recording_flag
