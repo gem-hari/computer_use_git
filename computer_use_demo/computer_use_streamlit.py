@@ -9,16 +9,24 @@ st.subheader("Enter an instruction to call the API")
 
 with st.form("instruction_form"):
     instruction = st.text_input("Instruction:", "")
+    task_type = st.selectbox(
+    "Select Task Type:",
+    ["Computer use", "Testing poc"]
+    )
     submit_button = st.form_submit_button("Submit")
 
 if submit_button:
+    if task_type == "Computer use":
+        api_url = "http://127.0.0.1:8000/computer_use/"
+    else:
+        api_url = "http://127.0.0.1:8000/testing_poc/"
+
     if instruction.strip() == "":
         st.error("Please enter a valid instruction.")
     else:
-        api_url = "http://127.0.0.1:8001/computer_usage/"
         headers = {"Content-Type": "application/json"}
-        payload = {"instruction": instruction}
-
+        payload = {"instruction": instruction,
+        "use_case": task_type}
         try:
             response = requests.post(api_url, json=payload, headers=headers)
 
@@ -35,7 +43,7 @@ if submit_button:
                     st.info(f"Fetching video from S3: {object_name}")                    
                     s3_url = s3_client.generate_presigned_url('get_object',
                     Params={'Bucket': bucket_name, 'Key': object_name},
-                    ExpiresIn=300
+                    ExpiresIn=600
                     )
                     st.info("Video file is ready to download.")
                     st.markdown(

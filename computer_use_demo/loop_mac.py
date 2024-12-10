@@ -85,6 +85,7 @@ async def sampling_loop(
     model: str,
     provider: APIProvider,
     system_prompt_suffix: str,
+    SYSTEM_PROMPT:str,
     messages: list[BetaMessageParam],
     output_callback: Callable[[BetaContentBlockParam], None],
     tool_output_callback: Callable[[ToolResult, str], None],
