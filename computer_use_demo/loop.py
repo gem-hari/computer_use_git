@@ -1,13 +1,9 @@
-"""
-Agentic sampling loop that calls the Anthropic API and local implementation of anthropic-defined computer use tools.
-"""
-
 import platform
 from collections.abc import Callable
 from datetime import datetime
 from enum import StrEnum
 from typing import Any, cast
-
+from anthropic import APIResponse
 import httpx
 from anthropic import (
     Anthropic,
@@ -30,9 +26,16 @@ from anthropic.types.beta import (
 )
 
 from tools import BashTool, ComputerTool, EditTool, ToolCollection, ToolResult
+import os
+
+
+from dotenv import load_dotenv
+load_dotenv()
 
 COMPUTER_USE_BETA_FLAG = "computer-use-2024-10-22"
 PROMPT_CACHING_BETA_FLAG = "prompt-caching-2024-07-31"
+
+BETA_FLAG = "computer-use-2024-10-22"
 
 
 class APIProvider(StrEnum):
@@ -53,14 +56,19 @@ PROVIDER_TO_DEFAULT_MODEL_NAME: dict[APIProvider, str] = {
 # We encourage modifying this system prompt to ensure the model has context for the
 # environment it is running in, and to provide any additional information that may be
 # helpful for the task at hand.
+
+
 SYSTEM_PROMPT = f"""<SYSTEM_CAPABILITY>
 * You are utilising an Ubuntu virtual machine using {platform.machine()} architecture with internet access.
+* If the screen is locked, use password {os.getenv("SCREEN_PASSWRD")}.
 * You can feel free to install Ubuntu applications with your bash tool. Use curl instead of wget.
-* To open firefox, please just click on the firefox icon.  Note, firefox-esr is what is installed on your system.
-* Using bash tool you can start GUI applications, but you need to set export DISPLAY=:1 and use a subshell. For example "(DISPLAY=:1 xterm &)". GUI apps run with bash tool will appear within your desktop environment, but they may take some time to appear. Take a screenshot to confirm it did.
+* Open a new bash terminal to execute your bash commands.
+* Using bash tool you can start GUI applications, but you need to set export DISPLAY=:{os.getenv("DISPLAY_NUM")} and use a subshell. For example "(DISPLAY=:10 xterm &)". GUI apps run with bash tool will appear within your desktop environment, but they may take some time to appear. Take a screenshot to confirm it did.
+* Get the DISPLAY value by performing echo $DISPLAY, and use this value while starting the bash and firefox.
+* To open firefox, please just execute (DISPLAY=:{os.getenv("DISPLAY_NUM")} firefox &).
 * When using your bash tool with commands that are expected to output very large quantities of text, redirect into a tmp file and use str_replace_editor or `grep -n -B <lines before> -A <lines after> <query> <filename>` to confirm output.
 * When viewing a page it can be helpful to zoom out so that you can see everything on the page.  Either that, or make sure you scroll down to see everything before deciding something isn't available.
-* When using your computer function calls, they take a while to run and send back to you.  Where possible/feasible, try to chain multiple of these calls all into one function calls request.
+* When using your computer function calls, they may take a while to run and send back to you. Where possible and feasible, try to chain multiple of these calls into one function call request.
 * The current date is {datetime.today().strftime('%A, %B %-d, %Y')}.
 </SYSTEM_CAPABILITY>
 
@@ -70,17 +78,18 @@ SYSTEM_PROMPT = f"""<SYSTEM_CAPABILITY>
 </IMPORTANT>"""
 
 
+
+
 async def sampling_loop(
     *,
     model: str,
     provider: APIProvider,
     system_prompt_suffix: str,
+    SYSTEM_PROMPT:str,
     messages: list[BetaMessageParam],
     output_callback: Callable[[BetaContentBlockParam], None],
     tool_output_callback: Callable[[ToolResult, str], None],
-    api_response_callback: Callable[
-        [httpx.Request, httpx.Response | object | None, Exception | None], None
-    ],
+    api_response_callback: Callable[[APIResponse[BetaMessage]], None],
     api_key: str,
     only_n_most_recent_images: int | None = None,
     max_tokens: int = 4096,
@@ -93,84 +102,57 @@ async def sampling_loop(
         BashTool(),
         EditTool(),
     )
-    system = BetaTextBlockParam(
-        type="text",
-        text=f"{SYSTEM_PROMPT}{' ' + system_prompt_suffix if system_prompt_suffix else ''}",
+    system = (
+        f"{SYSTEM_PROMPT}{' ' + system_prompt_suffix if system_prompt_suffix else ''}"
     )
 
     while True:
-        enable_prompt_caching = False
-        betas = [COMPUTER_USE_BETA_FLAG]
-        image_truncation_threshold = only_n_most_recent_images or 0
+        if only_n_most_recent_images:
+            _maybe_filter_to_n_most_recent_images(messages, only_n_most_recent_images)
+
         if provider == APIProvider.ANTHROPIC:
-            client = Anthropic(api_key=api_key, max_retries=4)
-            enable_prompt_caching = True
+            client = Anthropic(api_key=api_key)
         elif provider == APIProvider.VERTEX:
             client = AnthropicVertex()
         elif provider == APIProvider.BEDROCK:
             client = AnthropicBedrock()
 
-        if enable_prompt_caching:
-            betas.append(PROMPT_CACHING_BETA_FLAG)
-            _inject_prompt_caching(messages)
-            # Because cached reads are 10% of the price, we don't think it's
-            # ever sensible to break the cache by truncating images
-            only_n_most_recent_images = 0
-            system["cache_control"] = {"type": "ephemeral"}
-
-        if only_n_most_recent_images:
-            _maybe_filter_to_n_most_recent_images(
-                messages,
-                only_n_most_recent_images,
-                min_removal_threshold=image_truncation_threshold,
-            )
-
         # Call the API
         # we use raw_response to provide debug information to streamlit. Your
         # implementation may be able call the SDK directly with:
         # `response = client.messages.create(...)` instead.
-        try:
-            raw_response = client.beta.messages.with_raw_response.create(
-                max_tokens=max_tokens,
-                messages=messages,
-                model=model,
-                system=[system],
-                tools=tool_collection.to_params(),
-                betas=betas,
-            )
-        except (APIStatusError, APIResponseValidationError) as e:
-            api_response_callback(e.request, e.response, e)
-            return messages
-        except APIError as e:
-            api_response_callback(e.request, e.body, e)
-            return messages
-
-        api_response_callback(
-            raw_response.http_response.request, raw_response.http_response, None
+        raw_response = client.beta.messages.with_raw_response.create(
+            max_tokens=max_tokens,
+            messages=messages,
+            model=model,
+            system=system,
+            tools=tool_collection.to_params(),
+            betas=["computer-use-2024-10-22"],
         )
+
+        api_response_callback(cast(APIResponse[BetaMessage], raw_response))
 
         response = raw_response.parse()
 
-        response_params = _response_to_params(response)
         messages.append(
             {
                 "role": "assistant",
-                "content": response_params,
+                "content": cast(list[BetaContentBlockParam], response.content),
             }
         )
 
         tool_result_content: list[BetaToolResultBlockParam] = []
-        for content_block in response_params:
+        for content_block in cast(list[BetaContentBlockParam], response.content):
             output_callback(content_block)
-            if content_block["type"] == "tool_use":
+            if content_block.type == "tool_use":
                 result = await tool_collection.run(
-                    name=content_block["name"],
-                    tool_input=cast(dict[str, Any], content_block["input"]),
+                    name=content_block.name,
+                    tool_input=cast(dict[str, Any], content_block.input),
                 )
                 tool_result_content.append(
-                    _make_api_tool_result(result, content_block["id"])
+                    _make_api_tool_result(result, content_block.id)
                 )
-                tool_output_callback(result, content_block["id"])
+                tool_output_callback(result, content_block.id)
 
         if not tool_result_content:
             return messages
@@ -181,7 +163,7 @@ async def sampling_loop(
 def _maybe_filter_to_n_most_recent_images(
     messages: list[BetaMessageParam],
     images_to_keep: int,
-    min_removal_threshold: int,
+    min_removal_threshold: int = 10,
 ):
     """
     With the assumption that images are screenshots that are of diminishing value as
@@ -225,42 +207,6 @@ def _maybe_filter_to_n_most_recent_images(
                         continue
                 new_content.append(content)
             tool_result["content"] = new_content
-
-
-def _response_to_params(
-    response: BetaMessage,
-) -> list[BetaTextBlockParam | BetaToolUseBlockParam]:
-    res: list[BetaTextBlockParam | BetaToolUseBlockParam] = []
-    for block in response.content:
-        if isinstance(block, BetaTextBlock):
-            res.append({"type": "text", "text": block.text})
-        else:
-            res.append(cast(BetaToolUseBlockParam, block.model_dump()))
-    return res
-
-
-def _inject_prompt_caching(
-    messages: list[BetaMessageParam],
-):
-    """
-    Set cache breakpoints for the 3 most recent turns
-    one cache breakpoint is left for tools/system prompt, to be shared across sessions
-    """
-
-    breakpoints_remaining = 3
-    for message in reversed(messages):
-        if message["role"] == "user" and isinstance(
-            content := message["content"], list
-        ):
-            if breakpoints_remaining:
-                breakpoints_remaining -= 1
-                content[-1]["cache_control"] = BetaCacheControlEphemeralParam(
-                    {"type": "ephemeral"}
-                )
-            else:
-                content[-1].pop("cache_control", None)
-                # we'll only every have one extra turn per loop
-                break
 
 
 def _make_api_tool_result(

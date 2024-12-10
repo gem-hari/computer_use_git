@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, g
 import asyncio
-from main_scratch import main, last_api_response
+from main_entry import main, last_api_response
 import json
 import threading
 from threading import Lock
@@ -43,7 +43,7 @@ async def run_computer_use():
 
         if data and 'instruction' in data:
             import sys
-            sys.argv=["main_scratch.py", data['instruction'],"False"]
+            sys.argv=["main_entry.py", data['instruction'],"False"]
         else:
             return jsonify({"status": "error", "message": "No Instruction found in the request."}), 500
         
@@ -71,7 +71,7 @@ async def run_computer_use():
 
         ###close all the apps started 
         print("Closing all the apps on UI")
-        sys.argv = ["main_scratch.py", "Close all the apps like firefox, terminal running on the UI."]
+        sys.argv = ["main_entry.py", "Close all the apps like firefox, terminal running on the UI."]
         await main(g)
 
         print("Clearing the screenshots and locally saved recording")
@@ -144,7 +144,7 @@ async def run_testing_poc():
     
         if data and 'instruction' in data:
             import sys
-            sys.argv=["main_scratch.py", data['instruction'],"True"]
+            sys.argv=["main_entry.py", data['instruction'],"True"]
         else:
             return jsonify({"status": "error", "message": "No Instruction found in the request."}), 500
         
@@ -171,7 +171,7 @@ async def run_testing_poc():
 
         ###close all the apps started 
         print("Closing all the apps on UI")
-        sys.argv = ["main_scratch.py", "Close all the apps like firefox, terminal running on the UI."]
+        sys.argv = ["main_entry.py", "Close all the apps like firefox, terminal running on the UI."]
         await main(g)
 
         print("Clearing the screenshots and locally saved recording")

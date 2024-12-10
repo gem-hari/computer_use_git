@@ -22,7 +22,7 @@ from streamlit.delta_generator import DeltaGenerator
 from anthropic.types.beta import BetaMessage, BetaMessageParam
 from anthropic import APIResponse
 
-from loop_mac import (
+from loop import (
     PROVIDER_TO_DEFAULT_MODEL_NAME,
     APIProvider,
     sampling_loop,
