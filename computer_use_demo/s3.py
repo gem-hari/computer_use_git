@@ -1,6 +1,8 @@
 import os
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+import csv
+import io
 
 #s3_client = boto3.client(service_name='s3')
 
@@ -49,3 +51,41 @@ def extract_file_from_s3(s3_client,bucket, object_name):
     except Exception as e:
         print(f"An error occurred: {e}")
         return exit(1)
+
+
+
+
+def append_log_to_s3(s3_client, bucket, object_name, log_data):
+    """
+    Append a log entry to a CSV file stored in S3. Create the file if it doesn't exist.
+    """
+    try:
+        # Try to fetch the existing file from S3
+        csv_buffer = io.StringIO()
+        try:
+            response = s3_client.get_object(Bucket=bucket, Key=object_name)
+            existing_data = response['Body'].read().decode('utf-8')
+            csv_buffer.write(existing_data)
+        except s3_client.exceptions.NoSuchKey:
+            # File does not exist, create a new one
+            print("Log file not found, creating a new one.")
+
+        # Create a CSV writer and append the log
+        writer = csv.DictWriter(csv_buffer, fieldnames=[
+            "API_endpoint", "start_time", "end_time", "task_name", "prompt",
+            "response", "s3_video_link", "status"
+        ])
+        if csv_buffer.tell() == 0:  # Check if buffer is empty (new file)
+            writer.writeheader()
+        writer.writerow(log_data)
+
+        # Upload updated CSV back to S3
+        s3_client.put_object(
+            Bucket=bucket,
+            Key=object_name,
+            Body=csv_buffer.getvalue()
+        )
+        print(f"Log successfully updated in {bucket}/{object_name}")
+
+    except Exception as e:
+        print(f"Error while updating log in S3: {e}")
