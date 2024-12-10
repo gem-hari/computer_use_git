@@ -21,7 +21,6 @@ import os
 
 load_dotenv()
 
-<<<<<<< HEAD
 @app.route('/',methods=['GET'])
 async def home():
     return "Running. "
@@ -30,17 +29,10 @@ async def home():
 @app.route('/computer_usage/', methods=['POST'])
 async def run_main():
     last_api_response = None
-=======
-@app.route('/computer_use/', methods=['POST'])
-async def run_computer_use():
-    print("Testing POC endpoint activated")
-    last_api_response =None
->>>>>>> e8157367026f9e87c6fd0f1f2d836e4191265b7d
     global recording
     global is_running
     save_dir = os.getenv("RESUTS_DIR")
     process_start_time = datetime.now()
-<<<<<<< HEAD
     process_start_time_formatted = process_start_time.strftime("%Y-%m-%d %H:%M:%S")
     log_file_name = f"log_{process_start_time.strftime('%Y%m%d_%H%M%S')}.csv"
     video_record_name = f"screen_recording_{process_start_time.strftime('%Y%m%d_%H%M%S')}.mp4"
@@ -49,20 +41,12 @@ async def run_computer_use():
     bucket = "computerusebucket"
     recording_flag = Value('b', True)
     
-=======
-    process_start_time = process_start_time.strftime("%Y%m%d_%H%M%S")
-    video_record_name = "screen_recording_"+process_start_time + "_.mp4"
->>>>>>> e8157367026f9e87c6fd0f1f2d836e4191265b7d
     try:
         if not api_lock.acquire(blocking=False):
             return jsonify({"status": "error", "message": "API is busy. Please try again later."}), 503
         is_running = True
 
         data = request.json
-<<<<<<< HEAD
-=======
-
->>>>>>> e8157367026f9e87c6fd0f1f2d836e4191265b7d
         if data and 'instruction' in data:
             task_name = "Execute Instruction"
             prompt = data['instruction']
@@ -70,15 +54,9 @@ async def run_computer_use():
             sys.argv=["main_entry.py", data['instruction'],"False"]
         else:
             return jsonify({"status": "error", "message": "No Instruction found in the request."}), 500
-<<<<<<< HEAD
 
         os.makedirs(save_dir, exist_ok=True)
         # Start screen recording as a sub-process
-=======
-        
-        ##starting the screen recording as a sub-process
-        os.makedirs(save_dir, exist_ok=True)
->>>>>>> e8157367026f9e87c6fd0f1f2d836e4191265b7d
         screen_process = Process(target=record_screen, kwargs={
             "output_file": save_dir + video_record_name,
             "recording_flag": recording_flag
@@ -94,17 +72,11 @@ async def run_computer_use():
             screen_process.terminate()
             print("Screen recording process forcefully terminated.")
 
-<<<<<<< HEAD
         object_name = upload_to_s3(s3_client, save_dir + video_record_name, bucket)
         print(f"File uploaded to S3 with the name {object_name}")
 
         # Close all apps started
         sys.argv = ["main_scratch.py", "Close all the apps like firefox, terminal running on the UI."]
-=======
-        ###close all the apps started 
-        print("Closing all the apps on UI")
-        sys.argv = ["main_entry.py", "Close all the apps like firefox, terminal running on the UI."]
->>>>>>> e8157367026f9e87c6fd0f1f2d836e4191265b7d
         await main(g)
 
         print("Clearing the screenshots and locally saved recording")
@@ -301,4 +273,5 @@ async def run_testing_poc():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8001)
+    # app.run(host='0.0.0.0', port=8000)
