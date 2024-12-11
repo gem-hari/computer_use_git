@@ -34,7 +34,7 @@ async def run_main():
     save_dir = os.getenv("RESUTS_DIR")
     process_start_time = datetime.now()
     process_start_time_formatted = process_start_time.strftime("%Y-%m-%d %H:%M:%S")
-    log_file_name = f"log_{process_start_time.strftime('%Y%m%d_%H%M%S')}.csv"
+    log_file_name ="log_file.csv"
     video_record_name = f"screen_recording_{process_start_time.strftime('%Y%m%d_%H%M%S')}.mp4"
 
     s3_client = boto3.client(service_name='s3')
@@ -48,7 +48,7 @@ async def run_main():
 
         data = request.json
         if data and 'instruction' in data:
-            task_name = "Execute Instruction"
+            task_name = "POC testing"
             prompt = data['instruction']
             import sys
             sys.argv=["main_entry.py", data['instruction'],"False"]
@@ -154,7 +154,7 @@ async def run_main():
             "API_endpoint": "/computer_usage/",
             "start_time": process_start_time_formatted,
             "end_time": end_time,
-            "task_name": "Error Handling",
+            "task_name": "Error Handling while POC testing",
             "prompt": "N/A",
             "response": str(e),
             "s3_video_link": object_name or "",

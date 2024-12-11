@@ -3,6 +3,8 @@ import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import csv
 import io
+import pandas as pd
+from io import StringIO
 
 #s3_client = boto3.client(service_name='s3')
 
@@ -54,38 +56,35 @@ def extract_file_from_s3(s3_client,bucket, object_name):
 
 
 
-
-def append_log_to_s3(s3_client, bucket, object_name, log_data):
-    """
-    Append a log entry to a CSV file stored in S3. Create the file if it doesn't exist.
-    """
+def append_log_to_s3(s3_client, bucket, log_file_name, log_data):
     try:
-        # Try to fetch the existing file from S3
-        csv_buffer = io.StringIO()
+        # Check if the log file already exists in the S3 bucket
+        existing_data = None
         try:
-            response = s3_client.get_object(Bucket=bucket, Key=object_name)
+            response = s3_client.get_object(Bucket=bucket, Key=log_file_name)
             existing_data = response['Body'].read().decode('utf-8')
-            csv_buffer.write(existing_data)
         except s3_client.exceptions.NoSuchKey:
-            # File does not exist, create a new one
-            print("Log file not found, creating a new one.")
+            print(f"{log_file_name} does not exist. Creating a new file.")
 
-        # Create a CSV writer and append the log
-        writer = csv.DictWriter(csv_buffer, fieldnames=[
-            "API_endpoint", "start_time", "end_time", "task_name", "prompt",
-            "response", "s3_video_link", "status"
-        ])
-        if csv_buffer.tell() == 0:  # Check if buffer is empty (new file)
-            writer.writeheader()
-        writer.writerow(log_data)
+        # Load existing data into a DataFrame (if it exists)
+        if existing_data:
+            csv_buffer = StringIO(existing_data)
+            df = pd.read_csv(csv_buffer)
+        else:
+            # Create an empty DataFrame with the required columns
+            df = pd.DataFrame(columns=["API_endpoint", "start_time", "end_time", "task_name", "prompt", "response", "s3_video_link", "status"])
 
-        # Upload updated CSV back to S3
-        s3_client.put_object(
-            Bucket=bucket,
-            Key=object_name,
-            Body=csv_buffer.getvalue()
-        )
-        print(f"Log successfully updated in {bucket}/{object_name}")
+        # Ensure log_data is structured as a single-row DataFrame
+        new_data = pd.DataFrame([log_data])
+
+        # Concatenate the new data with the existing DataFrame
+        df = pd.concat([df, new_data], ignore_index=True)
+
+        # Write the updated DataFrame back to S3
+        csv_buffer = StringIO()
+        df.to_csv(csv_buffer, index=False)
+        s3_client.put_object(Bucket=bucket, Key=log_file_name, Body=csv_buffer.getvalue())
+        print("Log successfully updated in S3.")
 
     except Exception as e:
-        print(f"Error while updating log in S3: {e}")
+        print(f"Error occurred while appending log to S3: {e}")
