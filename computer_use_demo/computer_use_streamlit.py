@@ -17,9 +17,9 @@ with st.form("instruction_form"):
 
 if submit_button:
     if task_type == "Computer use":
-        api_url = "http://127.0.0.1:8000/computer_use/"
+        api_url = "http://127.0.0.1:8001/computer_use/"
     else:
-        api_url = "http://127.0.0.1:8000/testing_poc/"
+        api_url = "http://127.0.0.1:8001/testing_poc/"
 
     if instruction.strip() == "":
         st.error("Please enter a valid instruction.")

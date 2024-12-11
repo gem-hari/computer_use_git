@@ -88,3 +88,13 @@ def append_log_to_s3(s3_client, bucket, log_file_name, log_data):
 
     except Exception as e:
         print(f"Error occurred while appending log to S3: {e}")
+
+def fetch_csv_from_s3(s3_client,bucket_name, file_key):
+    try:        
+        response = s3_client.get_object(Bucket=bucket_name, Key=file_key)        
+        csv_content = response['Body'].read().decode('utf-8')
+        df = pd.read_csv(StringIO(csv_content))
+        return df
+    except Exception as e:
+        st.error(f"Error fetching the file: {e}")
+        return None

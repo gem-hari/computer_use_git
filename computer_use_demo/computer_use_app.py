@@ -26,7 +26,7 @@ async def home():
     return "Running. "
 
 
-@app.route('/computer_usage/', methods=['POST'])
+@app.route('/computer_use/', methods=['POST'])
 async def run_main():
     last_api_response = None
     global recording
@@ -34,13 +34,14 @@ async def run_main():
     save_dir = os.getenv("RESUTS_DIR")
     process_start_time = datetime.now()
     process_start_time_formatted = process_start_time.strftime("%Y-%m-%d %H:%M:%S")
-    log_file_name ="log_file.csv"
+    log_file_name = os.getenv("ADMIN_LOG_FILE_NAME")
     video_record_name = f"screen_recording_{process_start_time.strftime('%Y%m%d_%H%M%S')}.mp4"
 
     s3_client = boto3.client(service_name='s3')
-    bucket = "computerusebucket"
+    #bucket = "computerusebucket"
+    bucket = os.getenv("BUCKET_NAME")
     recording_flag = Value('b', True)
-    
+
     try:
         if not api_lock.acquire(blocking=False):
             return jsonify({"status": "error", "message": "API is busy. Please try again later."}), 503
@@ -48,7 +49,7 @@ async def run_main():
 
         data = request.json
         if data and 'instruction' in data:
-            task_name = "POC testing"
+            task_name = "Computer use"
             prompt = data['instruction']
             import sys
             sys.argv=["main_entry.py", data['instruction'],"False"]
@@ -94,17 +95,22 @@ async def run_main():
 
         # Log success to S3
         end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_data = {
-            "API_endpoint": "/computer_usage/",
-            "start_time": process_start_time_formatted,
-            "end_time": end_time,
-            "task_name": task_name,
-            "prompt": prompt,
-            "response": json.dumps(last_api_response),
-            "s3_video_link": object_name,
-            "status": "success"
-        }
-        append_log_to_s3(s3_client, bucket, log_file_name, log_data)
+
+        try:
+            end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_data = {
+                "API_endpoint": "/computer_use/",
+                "start_time": process_start_time_formatted,
+                "end_time": end_time,
+                "task_name": task_name,
+                "prompt": prompt,
+                "response": json.dumps(last_api_response),
+                "s3_video_link": object_name,
+                "status": "success"
+            }
+            append_log_to_s3(s3_client, bucket, log_file_name, log_data)
+        except Exception as e:
+            print("Error occured while updating the csv file ", str(e))
 
         if last_api_response:
             with open(save_dir + "last_api_response.json", "w") as json_file:
@@ -151,10 +157,10 @@ async def run_main():
         # Log error to S3
         end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_data = {
-            "API_endpoint": "/computer_usage/",
+            "API_endpoint": "/computer_use/",
             "start_time": process_start_time_formatted,
             "end_time": end_time,
-            "task_name": "Error Handling while POC testing",
+            "task_name": "Error Handling while Computer use endpoint",
             "prompt": "N/A",
             "response": str(e),
             "s3_video_link": object_name or "",
@@ -180,9 +186,10 @@ async def run_testing_poc():
     global recording
     global is_running
     save_dir = os.getenv("RESUTS_DIR")
+    log_file_name = os.getenv("ADMIN_LOG_FILE_NAME")
     process_start_time = datetime.now()
-    process_start_time = process_start_time.strftime("%Y%m%d_%H%M%S")
-    video_record_name = "screen_recording_"+process_start_time + "_.mp4"
+    process_start_time_formatted = process_start_time.strftime("%Y-%m-%d %H:%M:%S")
+    video_record_name = f"screen_recording_{process_start_time.strftime('%Y%m%d_%H%M%S')}.mp4"
     try:
         if not api_lock.acquire(blocking=False):
             return jsonify({"status": "error", "message": "API is busy. Please try again later."}), 503
@@ -192,8 +199,10 @@ async def run_testing_poc():
         bucket = "computerusebucket"
         recording_flag = Value('b', True)
         data = request.json
-    
         if data and 'instruction' in data:
+            task_name = "Testing POC"
+            prompt = data['instruction']
+
             import sys
             sys.argv=["main_entry.py", data['instruction'],"True"]
         else:
@@ -237,6 +246,21 @@ async def run_testing_poc():
         if api_lock.locked():
             api_lock.release()
 
+        try:
+            end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_data = {
+                "API_endpoint": "/testing_poc/",
+                "start_time": process_start_time_formatted,
+                "end_time": end_time,
+                "task_name": task_name,
+                "prompt": prompt,
+                "response": json.dumps(last_api_response),
+                "s3_video_link": object_name,
+                "status": "success"
+            }
+            append_log_to_s3(s3_client, bucket, log_file_name, log_data)
+        except Exception as e:
+            print("Error occured while updating the csv file ", str(e))
         if hasattr(g, "last_api_response") and last_api_response:
             with open(save_dir+"last_api_response.json", "w") as json_file:
                 json.dump(last_api_response, json_file, indent=4)
@@ -266,6 +290,21 @@ async def run_testing_poc():
             clear_files_in_folder(os.getenv("OUTPUT_DIR"))
         if api_lock.locked():
             api_lock.release()
+        
+        # Log error to S3
+        end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_data = {
+            "API_endpoint": "/testing_poc/",
+            "start_time": process_start_time_formatted,
+            "end_time": end_time,
+            "task_name": "Error Handling while POC testing",
+            "prompt": "N/A",
+            "response": str(e),
+            "s3_video_link": object_name or "",
+            "status": "error"
+        }
+        append_log_to_s3(s3_client, bucket, log_file_name, log_data)
+
         if object_name is None:
             return jsonify({"status": "error", "message": str(e)}), 500        
         else:
