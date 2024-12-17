@@ -1,2 +1,5 @@
-venv
-computer_use_demo/__pycache__
+.env
+venv/
+__pycache__
+results/
+computer_use_demo/

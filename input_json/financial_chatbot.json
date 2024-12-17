@@ -1,0 +1,4 @@
+{
+    "instruction": "Open your web browser and navigate to the following URL: http://alb-dev-finbot-713507689.ap-south-1.elb.amazonaws.com/.\nWait for a few seconds to ensure the webpage fully loads and all interactive elements are accessible.\nLocate the 'Message' section on the webpage. This is typically an input box or text field designed for user queries.\nClick on the 'Message' input field to activate it and prepare it for text entry.\nType the following message into the input field: 'give me the total income of Amazon'.\nSubmit the message by clicking the appropriate button (e.g., 'Send' or 'Submit') or pressing the Enter key, depending on the webpage's functionality.\nWait for the system to process your request and display a response on the screen. Ensure the response corresponds to the total income of Amazon.\nIf the response is not clear or detailed, refine the query as needed and repeat the process."
+}
+  

@@ -12,16 +12,11 @@ from anthropic.types.beta import BetaToolComputerUse20241022Param
 
 from .base import BaseAnthropicTool, ToolError, ToolResult
 from .run import run
-from dotenv import load_dotenv
-load_dotenv()
 
-<<<<<<< HEAD
-=======
 from dotenv import load_dotenv
 
 load_dotenv()
 
->>>>>>> 58607909e34f51f85f9d9a3e4b2a0d3c26c33bf8
 OUTPUT_DIR = os.getenv("OUTPUT_DIR") or "/tmp/outputs"
 
 TYPING_DELAY_MS = 12
