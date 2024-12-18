@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     AWS_REGION: "ap-south-1"
-    ECR_REPOSITORY_NAME: "email-extract-api-server"
+    ECR_REPOSITORY_NAME: "computer-use-server"
     ACCOUNT_ID: "851725235990" 
   
 
