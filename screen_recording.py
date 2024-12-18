@@ -42,8 +42,8 @@ def record_screen_to_kinesis(stream_name, aws_region, access_key, secret_key, fp
         gst_command = (
             f"gst-launch-1.0 -v appsrc ! videoconvert ! video/x-raw,format=I420,width={width},height={height},framerate={fps}/1 ! "
             f"x264enc speed-preset=ultrafast tune=zerolatency ! video/x-h264,stream-format=avc,alignment=au ! "
-            f"kvssink stream-name={stream_name} storage-size=512 "
-            f"access-key={access_key} secret-key={secret_key} aws-region={aws_region}"
+            f"kvssink stream-name=computer-use storage-size=512 "
+            f"access-key=ASIA4MTWHW4LBLT2Y6U3 secret-key=WMy1XrVd/IrUdZYpmgs2UjUCpJXpLv1iVZWQlJm5 aws-region=us-west-2"
         )
 
         # Start GStreamer process
