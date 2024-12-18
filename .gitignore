@@ -3,3 +3,4 @@ venv/
 __pycache__
 results/
 computer_use_demo/
+nohup.out
